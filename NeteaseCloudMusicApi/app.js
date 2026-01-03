@@ -2,17 +2,44 @@
 const fs = require('fs')
 const path = require('path')
 const tmpPath = require('os').tmpdir()
+const generateConfig = require('./generateConfig')
+const { consturctServer, serveNcmApi } = require('./server')
 
-async function start() {
-  // 检测是否存在 anonymous_token 文件,没有则生成
-  if (!fs.existsSync(path.resolve(tmpPath, 'anonymous_token'))) {
-    fs.writeFileSync(path.resolve(tmpPath, 'anonymous_token'), '', 'utf-8')
+const anonymousTokenPath = path.resolve(tmpPath, 'anonymous_token')
+
+function ensureAnonymousToken() {
+  if (!fs.existsSync(anonymousTokenPath)) {
+    fs.writeFileSync(anonymousTokenPath, '', 'utf-8')
   }
-  // 启动时更新anonymous_token
-  const generateConfig = require('./generateConfig')
-  await generateConfig()
-  require('./server').serveNcmApi({
-    checkVersion: true,
-  })
 }
-start()
+
+let cachedApp
+
+async function createApp() {
+  if (cachedApp) return cachedApp
+  ensureAnonymousToken()
+  await generateConfig()
+  cachedApp = await consturctServer()
+  return cachedApp
+}
+
+async function handler(req, res) {
+  const app = await createApp()
+  return app(req, res)
+}
+
+if (require.main === module) {
+  ensureAnonymousToken()
+  generateConfig()
+    .then(() =>
+      serveNcmApi({
+        checkVersion: true,
+      }),
+    )
+    .catch((err) => {
+      console.error(err)
+      process.exit(1)
+    })
+} else {
+  module.exports = handler
+}
