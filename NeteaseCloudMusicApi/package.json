@@ -7,7 +7,7 @@
     "test": "mocha -r intelli-espower-loader -t 60000 server.test.js main.test.js --exit",
     "lint": "eslint \"**/*.{js,ts}\"",
     "lint-fix": "eslint --fix \"**/*.{js,ts}\"",
-    "prepare": "husky install",
+    "prepare": "if [ -d .git ]; then husky install; else echo \"skip husky (no .git)\"; fi",
     "pkgwin": "pkg . -t node18-win-x64 -C GZip -o bin/app --no-bytecode",
     "pkglinux": "pkg . -t node18-linux-x64 -C GZip -o bin/app --no-bytecode",
     "pkgmacos": "pkg . -t node18-macos-x64 -C GZip -o bin/app --no-bytecode"
