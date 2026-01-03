@@ -13,4 +13,10 @@ module.exports = (query, request) => {
     data.immerseType = 'c51'
   }
   return request(`/api/song/enhance/player/url/v1`, data, createOption(query))
+  .then(response => {
+    for (const item of response.body.data) {
+      item.url = item.url.replace(/(m\d+?)(?!c)\.music\.126\.net/, '$1c.music.126.net');
+    }
+    return response;
+  });
 }

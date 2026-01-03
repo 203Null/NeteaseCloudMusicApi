@@ -16,6 +16,12 @@ module.exports = async (query, request) => {
   result.sort((a, b) => {
     return ids.indexOf(String(a.id)) - ids.indexOf(String(b.id))
   })
+  for (const item of result) {
+    item.url = item.url.replace(
+      /(m\d+?)(?!c)\.music\.126\.net/,
+      '$1c.music.126.net',
+    )
+  }
   return {
     status: 200,
     body: {
